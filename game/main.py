@@ -4,6 +4,7 @@ import arcade
 
 from game.math import distance
 from game.npc import NPC, ATTACK_DISTANCE
+from game.world import World
 
 SCREEN_TITLE = "Game"
 SCREEN_WIDTH = 1280
@@ -40,6 +41,11 @@ class Game(arcade.Window):
         self.physics_engine = arcade.PhysicsEngineSimple(self.player, self.terrain)
 
         self.do_attack = False
+
+        # TODO unit tests for world
+        # TODO draw world
+        # TODO physics for world
+        self.world = World()
 
     def on_draw(self):
         """ Render the screen. """
