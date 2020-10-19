@@ -41,8 +41,9 @@ class Game(arcade.Window):
         self.physics_engine = arcade.PhysicsEngineSimple(self.player, self.terrain)
 
         self.do_attack = False
+        self.view_left = -PLAYER_START_X
+        self.view_bottom = -PLAYER_START_Y
 
-        # TODO draw
         # TODO physics
         self.galaxy = Galaxy()
 
@@ -55,9 +56,20 @@ class Game(arcade.Window):
         if not self.player.fainted():
             self.player.draw()
 
+        for chunk in self.galaxy.position_to_active_chunks(
+            self.player.center_x, self.player.center_y
+        ):
+            for celestial_body in chunk.celestial_bodies:
+                arcade.draw_circle_filled(
+                    celestial_body.x,
+                    celestial_body.y,
+                    celestial_body.radius,
+                    arcade.color.YELLOW,
+                )
+
         # Draw our score on the screen, scrolling it with the viewport
         score_text = f"x: {self.player.center_x} y: {self.player.center_y} hp: {self.player.current_hp}"
-        arcade.draw_text(score_text, 10, 10, arcade.csscolor.WHITE, 18)
+        arcade.draw_text(score_text, self.view_left + 10, self.view_bottom + 10, arcade.csscolor.WHITE, 18)
 
     def on_update(self, delta_time):
         """ Movement and game logic """
@@ -79,6 +91,16 @@ class Game(arcade.Window):
         if self.do_attack:
             self.do_attack = False
             self.player.attack([])
+
+        # camera update
+        self.view_left = int(self.player.center_x) - SCREEN_WIDTH // 2
+        self.view_bottom = int(self.player.center_y) - SCREEN_HEIGHT // 2
+        arcade.set_viewport(
+            self.view_left,
+            SCREEN_WIDTH + self.view_left,
+            self.view_bottom,
+            SCREEN_HEIGHT + self.view_bottom,
+        )
 
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed. """
