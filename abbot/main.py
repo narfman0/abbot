@@ -4,7 +4,7 @@ import arcade
 
 from abbot.math import distance
 from abbot.npc import NPC, ATTACK_DISTANCE
-from abbot.world import World
+from abbot.galaxy import Galaxy
 
 SCREEN_TITLE = "Abbot"
 SCREEN_WIDTH = 1280
@@ -42,10 +42,10 @@ class Game(arcade.Window):
 
         self.do_attack = False
 
-        # TODO unit tests for world
-        # TODO draw world
-        # TODO physics for world
-        self.world = World()
+        # TODO unit tests
+        # TODO draw
+        # TODO physics
+        self.galaxy = Galaxy()
 
     def on_draw(self):
         """ Render the screen. """
