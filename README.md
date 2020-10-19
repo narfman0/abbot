@@ -1,12 +1,12 @@
-# game
+# Abbot
 
-Space castle crashers?
+Space platforming action adventure. You had me at space.
 
 ### TODO
 
-* Model planets
+* Model celestial bodies
 * Model player and movement with double jumps
-* Model player jumping planet to planet
+* Model player jumping celestial body to celestial body
 
 ## Getting Started
 
@@ -18,9 +18,7 @@ This project requires python 3 be installed with pip configured.
 
 ### Running
 
-There are two games within the project, each can be run directly with python.
-
-To run mega kings: `python -m game.main`
+To run the main game: `python -m abbot.main`
 
 ## License
 

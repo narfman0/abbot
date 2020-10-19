@@ -2,11 +2,11 @@ import random
 
 import arcade
 
-from game.math import distance
-from game.npc import NPC, ATTACK_DISTANCE
-from game.world import World
+from abbot.math import distance
+from abbot.npc import NPC, ATTACK_DISTANCE
+from abbot.world import World
 
-SCREEN_TITLE = "Game"
+SCREEN_TITLE = "Abbot"
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 1024
 

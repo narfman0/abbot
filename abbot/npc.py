@@ -2,8 +2,8 @@ import arcade
 
 import random
 
-from game.animated_sprite import AnimatedSprite
-from game.math import distance
+from abbot.animated_sprite import AnimatedSprite
+from abbot.math import distance
 
 ATTACK_DISTANCE = 100
 
