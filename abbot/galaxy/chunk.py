@@ -12,12 +12,13 @@ class Chunk:
     coordinates.
     """
 
-    def __init__(self, seed, chunk_x, chunk_y, chunk_center, chunk_width):
+    def __init__(self, seed, chunk_x, chunk_y, chunk_width):
         self.seed = seed
         self.chunk_x = chunk_x
         self.chunk_y = chunk_y
-        self.chunk_center = chunk_center
         self.chunk_width = chunk_width
+        self.center_x = chunk_x * chunk_width
+        self.center_y = chunk_y * chunk_width
 
         self.seed_chunk()
         self.celestial_bodies = []
@@ -34,8 +35,8 @@ class Chunk:
         random.seed(self.seed + self.chunk_y * self.chunk_width + self.chunk_x)
 
     def create_celestial_body(self):
-        x = self.chunk_center[0] + random.randint(-(2 ** 9), 2 ** 9)
-        y = self.chunk_center[1] + random.randint(-(2 ** 9), 2 ** 9)
+        x = self.center_x + random.randint(-(2 ** 9), 2 ** 9)
+        y = self.center_y + random.randint(-(2 ** 9), 2 ** 9)
         radius = random.randint(2 ** 9, 2 ** 11)
         body = CelestialBody(x, y, radius)
         self.celestial_bodies.append(body)

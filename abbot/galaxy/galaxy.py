@@ -34,7 +34,6 @@ class Galaxy:
             self.seed,
             chunk_x,
             chunk_y,
-            self.chunk_center_from_chunk_coordinates(chunk_x, chunk_y),
             self.chunk_width,
         )
 
