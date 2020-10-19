@@ -26,16 +26,11 @@ class Galaxy:
 
     def position_to_chunk_coordinates(self, x, y):
         """ Return the chunk coordinates based on the absolute x,y coordinates """
-        return (int(x // self.chunk_width), int(y // self.chunk_width))
+        return int(x // self.chunk_width), int(y // self.chunk_width)
 
     @lru_cache(maxsize=18)
     def chunk_from_chunk_coordinates(self, chunk_x, chunk_y):
-        return Chunk(
-            self.seed,
-            chunk_x,
-            chunk_y,
-            self.chunk_width,
-        )
+        return Chunk(self.seed, chunk_x, chunk_y, self.chunk_width)
 
     def chunk_center_from_chunk_coordinates(self, chunk_x, chunk_y):
-        return (self.chunk_width * chunk_x, self.chunk_width * chunk_y)
+        return self.chunk_width * chunk_x, self.chunk_width * chunk_y
