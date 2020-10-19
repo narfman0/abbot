@@ -42,7 +42,6 @@ class Game(arcade.Window):
 
         self.do_attack = False
 
-        # TODO unit tests
         # TODO draw
         # TODO physics
         self.galaxy = Galaxy()
