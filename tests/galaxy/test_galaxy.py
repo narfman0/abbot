@@ -24,3 +24,16 @@ def test_chunk_from_chunk_coordinates(galaxy):
 def test_chunk_center_from_chunk_coordinates(galaxy):
     assert galaxy.chunk_center_from_chunk_coordinates(0, 0) == (0, 0)
     assert galaxy.chunk_center_from_chunk_coordinates(1, 0) == (galaxy.chunk_width, 0)
+
+
+def test_position_to_active_chunk_coordinates(galaxy):
+    chunk_coordinates = list(galaxy.position_to_active_chunk_coordinates(0, 0))
+    assert len(chunk_coordinates) == 9
+    assert chunk_coordinates[0] == (-1, -1)
+    assert chunk_coordinates[4] == (0, 0)
+    assert chunk_coordinates[8] == (1, 1)
+
+
+def test_position_to_active_chunks(galaxy):
+    chunks = list(galaxy.position_to_active_chunks(0, 0))
+    assert len(chunks) == 9

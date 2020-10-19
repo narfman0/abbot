@@ -28,9 +28,21 @@ class Galaxy:
         """ Return the chunk coordinates based on the absolute x,y coordinates """
         return int(x // self.chunk_width), int(y // self.chunk_width)
 
-    @lru_cache(maxsize=18)
+    @lru_cache(maxsize=9)
     def chunk_from_chunk_coordinates(self, chunk_x, chunk_y):
         return Chunk(self.seed, chunk_x, chunk_y, self.chunk_width)
 
     def chunk_center_from_chunk_coordinates(self, chunk_x, chunk_y):
         return self.chunk_width * chunk_x, self.chunk_width * chunk_y
+
+    def position_to_active_chunk_coordinates(self, x, y):
+        chunk_coordinate_x, chunk_coordinate_y = self.position_to_chunk_coordinates(
+            x, y
+        )
+        for chunk_offset_x in [-1, 0, 1]:
+            for chunk_offset_y in [-1, 0, 1]:
+                yield chunk_coordinate_x + chunk_offset_x, chunk_coordinate_y + chunk_offset_y
+
+    def position_to_active_chunks(self, x, y):
+        for chunk_x, chunk_y in self.position_to_active_chunk_coordinates(x, y):
+            yield self.chunk_from_chunk_coordinates(chunk_x, chunk_y)
