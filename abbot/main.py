@@ -1,10 +1,11 @@
 import random
+from typing import Optional
 
 import arcade
 
 from abbot.math import distance
 from abbot.npc import NPC, ATTACK_DISTANCE
-from abbot.galaxy import Galaxy
+from abbot.galaxy import Chunk, Galaxy
 
 SCREEN_TITLE = "Abbot"
 SCREEN_WIDTH = 1280
@@ -14,6 +15,7 @@ SCREEN_HEIGHT = 1024
 MOVEMENT_SPEED = 2
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 25
+PLAYER_MOVE_FORCE_ON_GROUND = 8000
 
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = SCREEN_HEIGHT / 2
@@ -23,11 +25,9 @@ class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(arcade.color.AMAZON)
+        self.physics_engine = Optional[arcade.PymunkPhysicsEngine]
 
     def setup(self):
-        # Separate variable that holds the player sprite
-        self.terrain = arcade.SpriteList()
-
         # Set up the player, specifically placing it at these coordinates.
         self.player = NPC("kingkrool", hp=100)
         self.player.center_x = PLAYER_START_X
@@ -38,14 +38,26 @@ class Game(arcade.Window):
         self.moving_right = False
         self.moving_up = False
         self.moving_down = False
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player, self.terrain)
 
         self.do_attack = False
         self.view_left = -PLAYER_START_X
         self.view_bottom = -PLAYER_START_Y
 
-        # TODO physics
         self.galaxy = Galaxy()
+
+        # Physics
+        self.physics_engine = arcade.PymunkPhysicsEngine()
+        self.physics_engine.add_sprite(
+            self.player,
+            friction=1.0,
+            mass=2.0,
+            moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+            collision_type="player",
+            max_horizontal_velocity=1000,
+            max_vertical_velocity=1000,
+        )
+        self.active_chunks = []
+        self.active_chunks = self.update_active_chunks()
 
     def on_draw(self):
         """ Render the screen. """
@@ -56,9 +68,7 @@ class Game(arcade.Window):
         if not self.player.fainted():
             self.player.draw()
 
-        for chunk in self.galaxy.position_to_active_chunks(
-            self.player.center_x, self.player.center_y
-        ):
+        for chunk in self.active_chunks:
             for celestial_body in chunk.celestial_bodies:
                 arcade.draw_circle_filled(
                     celestial_body.x,
@@ -69,25 +79,31 @@ class Game(arcade.Window):
 
         # Draw our score on the screen, scrolling it with the viewport
         score_text = f"x: {self.player.center_x} y: {self.player.center_y} hp: {self.player.current_hp}"
-        arcade.draw_text(score_text, self.view_left + 10, self.view_bottom + 10, arcade.csscolor.WHITE, 18)
+        arcade.draw_text(
+            score_text,
+            self.view_left + 10,
+            self.view_bottom + 10,
+            arcade.csscolor.WHITE,
+            18,
+        )
 
     def on_update(self, delta_time):
         """ Movement and game logic """
         if self.moving_up:
-            self.player.change_y = MOVEMENT_SPEED
-        elif self.moving_down:
-            self.player.change_y = -MOVEMENT_SPEED
-        else:
-            self.player.change_y = 0
+            force = (0, PLAYER_MOVE_FORCE_ON_GROUND)
+            self.physics_engine.apply_force(self.player, force)
+        if self.moving_down:
+            force = (0, -PLAYER_MOVE_FORCE_ON_GROUND)
+            self.physics_engine.apply_force(self.player, force)
         if self.moving_left:
-            self.player.change_x = -MOVEMENT_SPEED
-        elif self.moving_right:
-            self.player.change_x = MOVEMENT_SPEED
-        else:
-            self.player.change_x = 0
+            force = (-PLAYER_MOVE_FORCE_ON_GROUND, 0)
+            self.physics_engine.apply_force(self.player, force)
+        if self.moving_right:
+            force = (PLAYER_MOVE_FORCE_ON_GROUND, 0)
+            self.physics_engine.apply_force(self.player, force)
         self.player.update()
-        self.terrain.update()
-        self.physics_engine.update()
+        self.update_active_chunks()
+        self.physics_engine.step()
         if self.do_attack:
             self.do_attack = False
             self.player.attack([])
@@ -129,6 +145,31 @@ class Game(arcade.Window):
             self.moving_right = False
         if key == arcade.key.DOWN:
             self.moving_down = False
+
+    def update_active_chunks(self):
+        last_active_chunks = self.active_chunks
+        self.active_chunks = list(
+            self.galaxy.position_to_active_chunks(
+                self.player.center_x, self.player.center_y
+            )
+        )
+        # remove chunk sprites from engine
+        for last_active_chunk in last_active_chunks:
+            if not Chunk.chunks_contain_chunk(self.active_chunks, last_active_chunk):
+                self.physics_engine.remove_sprite_list(
+                    last_active_chunk.celestial_bodies
+                )
+        # add chunk sprites to engine
+        for active_chunk in self.active_chunks:
+            if not Chunk.chunks_contain_chunk(last_active_chunks, active_chunk):
+                for body in active_chunk.celestial_bodies:
+                    self.physics_engine.add_sprite(
+                        body,
+                        friction=0.7,
+                        collision_type="wall",
+                        radius=body.radius,
+                        body_type=arcade.PymunkPhysicsEngine.STATIC,
+                    )
 
 
 def main():

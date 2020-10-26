@@ -1,5 +1,7 @@
 import random
 
+import arcade
+
 from abbot.galaxy.celestial_body import CelestialBody
 
 
@@ -21,7 +23,7 @@ class Chunk:
         self.center_y = chunk_y * chunk_width
 
         self.seed_chunk()
-        self.celestial_bodies = []
+        self.celestial_bodies = arcade.SpriteList()
         self.create_celestial_body()
         # TODO generate more/varied celestial modies
         # TODO generate features on celestial bodies
@@ -40,3 +42,10 @@ class Chunk:
         radius = random.randint(2 ** 9, 2 ** 11)
         body = CelestialBody(x, y, radius)
         self.celestial_bodies.append(body)
+
+    @staticmethod
+    def chunks_contain_chunk(chunks, chunk):
+        for chunks_chunk in chunks:
+            if chunks_chunk.coordinates == chunk.coordinates:
+                return True
+        return False
