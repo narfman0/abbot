@@ -28,6 +28,9 @@ class Chunk:
         # TODO generate more/varied celestial modies
         # TODO generate features on celestial bodies
 
+    def __eq__(self, obj):
+        return self.seed_chunk() == obj.seed_chunk()
+
     def seed_chunk(self):
         """ Initial pass at seed method. This should be consistent whenever
         we see this chunk, since it will be reclaimed and die at any time.
@@ -42,10 +45,3 @@ class Chunk:
         radius = random.randint(2 ** 9, 2 ** 11)
         body = CelestialBody(x, y, radius)
         self.celestial_bodies.append(body)
-
-    @staticmethod
-    def chunks_contain_chunk(chunks, chunk):
-        for chunks_chunk in chunks:
-            if chunks_chunk.coordinates == chunk.coordinates:
-                return True
-        return False

@@ -1,6 +1,7 @@
-import arcade
-
 import random
+
+import arcade
+import pymunk
 
 from abbot.animated_sprite import AnimatedSprite
 from abbot.math import distance
@@ -9,13 +10,16 @@ ATTACK_DISTANCE = 100
 
 
 class NPC(AnimatedSprite):
-    def __init__(self, sprite_name, hp=1, attack_stat=1, defense_stat=0, scale=1):
+    def __init__(self, sprite_name, hp=1, attack_stat=1, defense_stat=0, scale=1, x=0, y=0):
         super().__init__(sprite_name, scale)
         self.hp = hp
         self.current_hp = hp
         self.defense_stat = defense_stat
         self.attack_stat = attack_stat
         self.non_looped_frames_remaining = 0
+        self.body = pymunk.Body(1,1666)
+        self.body.position = x, y
+        self.poly = pymunk.Poly.create_box(self.body)
 
     def attack(self, npcs):
         if self.fainted() or self.current_animation_name == "attack":
@@ -52,3 +56,6 @@ class NPC(AnimatedSprite):
             and self.current_animation_name == "walk"
         ):
             self.set_animation("idle")
+        self.center_x = self.body.position.x
+        self.center_y = self.body.position.y
+        self.angle = self.body.angle

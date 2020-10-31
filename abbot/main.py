@@ -2,6 +2,7 @@ import random
 from typing import Optional
 
 import arcade
+import pymunk
 
 from abbot.math import distance
 from abbot.npc import NPC, ATTACK_DISTANCE
@@ -15,7 +16,7 @@ SCREEN_HEIGHT = 1024
 MOVEMENT_SPEED = 2
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 25
-PLAYER_MOVE_FORCE_ON_GROUND = 8000
+PLAYER_MOVE_FORCE_ON_GROUND = 1000
 
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = SCREEN_HEIGHT / 2
@@ -25,7 +26,7 @@ class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(arcade.color.AMAZON)
-        self.physics_engine = Optional[arcade.PymunkPhysicsEngine]
+        self.space = Optional[pymunk.Space]
 
     def setup(self):
         # Set up the player, specifically placing it at these coordinates.
@@ -33,7 +34,6 @@ class Game(arcade.Window):
         self.player.center_x = PLAYER_START_X
         self.player.center_y = PLAYER_START_Y
 
-        # Physics
         self.moving_left = False
         self.moving_right = False
         self.moving_up = False
@@ -46,16 +46,8 @@ class Game(arcade.Window):
         self.galaxy = Galaxy()
 
         # Physics
-        self.physics_engine = arcade.PymunkPhysicsEngine()
-        self.physics_engine.add_sprite(
-            self.player,
-            friction=1.0,
-            mass=2.0,
-            moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
-            collision_type="player",
-            max_horizontal_velocity=1000,
-            max_vertical_velocity=1000,
-        )
+        self.space = pymunk.Space()
+        self.space.add(self.player.body, self.player.poly)
         self.active_chunks = []
         self.active_chunks = self.update_active_chunks()
 
@@ -64,21 +56,20 @@ class Game(arcade.Window):
         # Clear the screen to the background color
         arcade.start_render()
 
-        self.terrain.draw()
         if not self.player.fainted():
             self.player.draw()
 
         for chunk in self.active_chunks:
             for celestial_body in chunk.celestial_bodies:
                 arcade.draw_circle_filled(
-                    celestial_body.x,
-                    celestial_body.y,
+                    celestial_body.center_x,
+                    celestial_body.center_y,
                     celestial_body.radius,
                     arcade.color.YELLOW,
                 )
 
         # Draw our score on the screen, scrolling it with the viewport
-        score_text = f"x: {self.player.center_x} y: {self.player.center_y} hp: {self.player.current_hp}"
+        score_text = f"{self.player.center_x:.2f},{self.player.center_y:.2f} angle: {self.player.angle:.2f} hp: {self.player.current_hp}"
         arcade.draw_text(
             score_text,
             self.view_left + 10,
@@ -91,19 +82,22 @@ class Game(arcade.Window):
         """ Movement and game logic """
         if self.moving_up:
             force = (0, PLAYER_MOVE_FORCE_ON_GROUND)
-            self.physics_engine.apply_force(self.player, force)
+            self.player.body.apply_force_at_local_point(force, (0, 0))
         if self.moving_down:
             force = (0, -PLAYER_MOVE_FORCE_ON_GROUND)
-            self.physics_engine.apply_force(self.player, force)
+            self.player.body.apply_force_at_local_point(force, (0, 0))
         if self.moving_left:
             force = (-PLAYER_MOVE_FORCE_ON_GROUND, 0)
-            self.physics_engine.apply_force(self.player, force)
+            self.player.body.apply_force_at_local_point(force, (0, 0))
         if self.moving_right:
             force = (PLAYER_MOVE_FORCE_ON_GROUND, 0)
-            self.physics_engine.apply_force(self.player, force)
+            self.player.body.apply_force_at_local_point(force, (0, 0))
         self.player.update()
+        # TODO will want to change this according to active celestial body
+        self.player.body.angle = 0
+
         self.update_active_chunks()
-        self.physics_engine.step()
+        self.space.step(delta_time)
         if self.do_attack:
             self.do_attack = False
             self.player.attack([])
@@ -147,7 +141,7 @@ class Game(arcade.Window):
             self.moving_down = False
 
     def update_active_chunks(self):
-        last_active_chunks = self.active_chunks
+        last_active_chunks = self.active_chunks or []
         self.active_chunks = list(
             self.galaxy.position_to_active_chunks(
                 self.player.center_x, self.player.center_y
@@ -155,21 +149,25 @@ class Game(arcade.Window):
         )
         # remove chunk sprites from engine
         for last_active_chunk in last_active_chunks:
-            if not Chunk.chunks_contain_chunk(self.active_chunks, last_active_chunk):
-                self.physics_engine.remove_sprite_list(
-                    last_active_chunk.celestial_bodies
-                )
+            if not last_active_chunk in self.active_chunks:
+                for celestial_body in last_active_chunk.celestial_bodies:
+                    self.space.remove(celestial_body.shape, celestial_body.body)
+                    print(f"Removed celestial_body {celestial_body.center_x},{celestial_body.center_y}")
+                print(f"Removed chunk {last_active_chunk.chunk_x},{last_active_chunk.chunk_y}")
         # add chunk sprites to engine
         for active_chunk in self.active_chunks:
-            if not Chunk.chunks_contain_chunk(last_active_chunks, active_chunk):
-                for body in active_chunk.celestial_bodies:
-                    self.physics_engine.add_sprite(
-                        body,
-                        friction=0.7,
-                        collision_type="wall",
-                        radius=body.radius,
-                        body_type=arcade.PymunkPhysicsEngine.STATIC,
-                    )
+            if not active_chunk in last_active_chunks:
+                for celestial_body in active_chunk.celestial_bodies:
+                    mass = 1
+                    moment = pymunk.moment_for_circle(mass, 0, celestial_body.radius) 
+                    body = pymunk.Body(mass, moment, body_type=pymunk.body.Body.STATIC)
+                    body.position = celestial_body.center_x, celestial_body.center_y
+                    shape = pymunk.Circle(body, celestial_body.radius)
+                    self.space.add(body, shape)
+                    celestial_body.body = body
+                    celestial_body.shape = shape
+                    print(f"Created celestial body at {celestial_body.center_x},{celestial_body.center_y} with r={celestial_body.radius}")
+                print(f"Added chunk {active_chunk.chunk_x},{active_chunk.chunk_y}")
 
 
 def main():
