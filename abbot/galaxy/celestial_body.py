@@ -1,5 +1,6 @@
 import arcade
 
+
 class CelestialBody(arcade.Sprite):
     def __init__(self, center_x, center_y, radius):
         """ x, y in absolute coordinates """

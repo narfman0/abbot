@@ -19,8 +19,8 @@ class GameplayWindow(arcade.Window):
         arcade.set_background_color(arcade.color.AMAZON)
 
     def setup(self):
-        self.view_left = -SCREEN_WIDTH//2
-        self.view_bottom = -SCREEN_HEIGHT//2
+        self.view_left = -SCREEN_WIDTH // 2
+        self.view_bottom = -SCREEN_HEIGHT // 2
         self.driver = Driver()
 
     def on_draw(self):
