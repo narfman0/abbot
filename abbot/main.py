@@ -18,9 +18,6 @@ GRAVITY = 1
 PLAYER_JUMP_SPEED = 25
 PLAYER_MOVE_FORCE_ON_GROUND = 1000
 
-PLAYER_START_X = SCREEN_WIDTH / 2
-PLAYER_START_Y = SCREEN_HEIGHT / 2
-
 
 class Game(arcade.Window):
     def __init__(self):
@@ -30,7 +27,7 @@ class Game(arcade.Window):
 
     def setup(self):
         # Set up the player, specifically placing it at these coordinates.
-        self.player = NPC("kingkrool", hp=100, x=PLAYER_START_X, y=PLAYER_START_Y)
+        self.player = NPC("kingkrool", hp=100)
 
         self.moving_left = False
         self.moving_right = False
