@@ -39,10 +39,16 @@ class NPC:
                 npc.current_hp = max(
                     0, npc.current_hp - (self.attack_stat - npc.defense_stat)
                 )
-                if npc.has_animation("hurt") and npc.current_animation_name == "idle":
-                    npc.set_animation("hurt")  # TODO: loop=False
+                if (
+                    npc._sprite.has_animation("hurt")
+                    and npc._sprite.current_animation_name == "idle"
+                ):
+                    npc._sprite.set_animation("hurt")  # TODO: loop=False
 
     def draw(self):
+        self._sprite.center_x = self.body.position.x
+        self._sprite.center_y = self.body.position.y
+        self._sprite.angle = self.body.angle
         self._sprite.draw()
 
     def fainted(self):
@@ -67,9 +73,6 @@ class NPC:
             and self._sprite.current_animation_name == "walk"
         ):
             self._sprite.set_animation("idle")
-        self._sprite.center_x = self.body.position.x
-        self._sprite.center_y = self.body.position.y
-        self._sprite.angle = self.body.angle
 
     @property
     def x(self):

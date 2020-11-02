@@ -65,26 +65,23 @@ class Driver:
         for last_active_chunk in last_active_chunks:
             if not last_active_chunk in self.active_chunks:
                 for celestial_body in last_active_chunk.celestial_bodies:
-                    self.space.remove(celestial_body.shape, celestial_body.body)
-                    print(
-                        f"Removed celestial_body {celestial_body.center_x},{celestial_body.center_y}"
-                    )
-                print(
-                    f"Removed chunk {last_active_chunk.chunk_x},{last_active_chunk.chunk_y}"
-                )
+                    try:
+                        self.space.remove(celestial_body.shape, celestial_body.body)
+                        print(f"Removed celestial_body {celestial_body}")
+                    except:
+                        print(f"Error removing celestial body {celestial_body}")
+
+                print(f"Removed chunk {last_active_chunk}")
         # add chunk sprites to engine
         for active_chunk in self.active_chunks:
             if not active_chunk in last_active_chunks:
                 for celestial_body in active_chunk.celestial_bodies:
-                    mass = 1
-                    moment = pymunk.moment_for_circle(mass, 0, celestial_body.radius)
-                    body = pymunk.Body(mass, moment, body_type=pymunk.body.Body.STATIC)
-                    body.position = celestial_body.center_x, celestial_body.center_y
-                    shape = pymunk.Circle(body, celestial_body.radius)
-                    self.space.add(body, shape)
-                    celestial_body.body = body
-                    celestial_body.shape = shape
-                    print(
-                        f"Created celestial body at {celestial_body.center_x},{celestial_body.center_y} with r={celestial_body.radius}"
-                    )
-                print(f"Added chunk {active_chunk.chunk_x},{active_chunk.chunk_y}")
+                    try:
+                        self.space.add(celestial_body.body, celestial_body.shape)
+                        print(f"Created celestial body {celestial_body}")
+                    except:
+                        print(
+                            f"Error, duplicate adding celestial body {celestial_body}"
+                        )
+
+                print(f"Added chunk {active_chunk}")
