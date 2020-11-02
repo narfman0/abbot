@@ -30,9 +30,7 @@ class Game(arcade.Window):
 
     def setup(self):
         # Set up the player, specifically placing it at these coordinates.
-        self.player = NPC("kingkrool", hp=100)
-        self.player.center_x = PLAYER_START_X
-        self.player.center_y = PLAYER_START_Y
+        self.player = NPC("kingkrool", hp=100, x=PLAYER_START_X, y=PLAYER_START_Y)
 
         self.moving_left = False
         self.moving_right = False
@@ -69,7 +67,7 @@ class Game(arcade.Window):
                 )
 
         # Draw our score on the screen, scrolling it with the viewport
-        score_text = f"{self.player.center_x:.2f},{self.player.center_y:.2f} angle: {self.player.angle:.2f} hp: {self.player.current_hp}"
+        score_text = f"{self.player.x:.2f},{self.player.y:.2f} angle: {self.player.angle:.2f} hp: {self.player.current_hp}"
         arcade.draw_text(
             score_text,
             self.view_left + 10,
@@ -93,8 +91,6 @@ class Game(arcade.Window):
             force = (PLAYER_MOVE_FORCE_ON_GROUND, 0)
             self.player.body.apply_force_at_local_point(force, (0, 0))
         self.player.update()
-        # TODO will want to change this according to active celestial body
-        self.player.body.angle = 0
 
         self.update_active_chunks()
         self.space.step(delta_time)
@@ -103,8 +99,8 @@ class Game(arcade.Window):
             self.player.attack([])
 
         # camera update
-        self.view_left = int(self.player.center_x) - SCREEN_WIDTH // 2
-        self.view_bottom = int(self.player.center_y) - SCREEN_HEIGHT // 2
+        self.view_left = int(self.player.x) - SCREEN_WIDTH // 2
+        self.view_bottom = int(self.player.y) - SCREEN_HEIGHT // 2
         arcade.set_viewport(
             self.view_left,
             SCREEN_WIDTH + self.view_left,
@@ -128,6 +124,8 @@ class Game(arcade.Window):
                 self.moving_down = True
             if key == arcade.key.A:
                 self.do_attack = True
+            if key == arcade.key.C:
+                self.player.body.angle = 0
 
     def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
@@ -144,7 +142,7 @@ class Game(arcade.Window):
         last_active_chunks = self.active_chunks or []
         self.active_chunks = list(
             self.galaxy.position_to_active_chunks(
-                self.player.center_x, self.player.center_y
+                self.player.x, self.player.y
             )
         )
         # remove chunk sprites from engine
