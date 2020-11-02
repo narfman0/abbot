@@ -19,7 +19,7 @@ class NPC(AnimatedSprite):
         self.non_looped_frames_remaining = 0
         self.body = pymunk.Body(1,1666)
         self.body.position = x, y
-        self.poly = pymunk.Poly.create_box(self.body)
+        self.poly = pymunk.Poly.create_box(self.body, radius=self.texture.width/2)
 
     def attack(self, npcs):
         if self.fainted() or self.current_animation_name == "attack":
