@@ -70,7 +70,7 @@ class GameplayWindow(arcade.Window):
             self.driver = Driver()
             return
         if not self.driver.player.fainted():
-            if key == arcade.key.UP:
+            if key == arcade.key.UP or key == arcade.key.SPACE:
                 self.driver.jump()
             if key == arcade.key.LEFT:
                 self.driver.moving_left = True
@@ -83,8 +83,6 @@ class GameplayWindow(arcade.Window):
 
     def on_key_release(self, key, modifiers):
         """Called when the user releases a key. """
-        if key == arcade.key.UP:
-            self.driver.moving_up = False
         if key == arcade.key.LEFT:
             self.driver.moving_left = False
         if key == arcade.key.RIGHT:
