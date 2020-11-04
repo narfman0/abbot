@@ -35,7 +35,7 @@ class NPC:
             self._sprite.get_current_animation_total_frames()
         )
         for npc in npcs:
-            if distance(npc, self) < ATTACK_DISTANCE:
+            if distance(npc.x, npc.y, self.x, self.y) < ATTACK_DISTANCE:
                 npc.current_hp = max(
                     0, npc.current_hp - (self.attack_stat - npc.defense_stat)
                 )

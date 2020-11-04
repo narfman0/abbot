@@ -1,5 +1,6 @@
 import math
 
 
-def distance(sprite1, sprite2):
-    return math.sqrt((sprite1.x - sprite2.x) ** 2 + (sprite1.y - sprite2.y) ** 2)
+def distance(x1, y1, x2, y2):
+    """ return distance between two points """
+    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)

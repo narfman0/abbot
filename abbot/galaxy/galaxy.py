@@ -2,6 +2,7 @@ import random
 from functools import lru_cache
 
 from abbot.galaxy.chunk import Chunk
+from abbot.math import distance
 
 
 class Galaxy:
@@ -27,6 +28,18 @@ class Galaxy:
     def position_to_chunk_coordinates(self, x, y):
         """ Return the chunk coordinates based on the absolute x,y coordinates """
         return int(x // self.chunk_width), int(y // self.chunk_width)
+
+    def closest_celestial_body(self, x, y):
+        """ Return the chunk coordinates based on the absolute x,y coordinates """
+        closest = None
+        closest_distance = -1
+        for chunk in self.position_to_active_chunks(x, y):
+            for celestial_body in chunk.celestial_bodies:
+                celestial_body_distance = distance(celestial_body.x, celestial_body.y, x, y) - celestial_body.radius
+                if closest is None or celestial_body_distance < closest_distance:
+                    closest_distance = celestial_body_distance
+                    closest = celestial_body
+        return closest
 
     @lru_cache(maxsize=9)
     def chunk_from_chunk_coordinates(self, chunk_x, chunk_y):
