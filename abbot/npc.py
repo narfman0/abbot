@@ -1,3 +1,4 @@
+import math
 import random
 
 import arcade
@@ -23,9 +24,11 @@ class NPC:
         self.non_looped_frames_remaining = 0
         self.body = pymunk.Body(1, 1666)
         self.body.position = x, y
-        self.poly = pymunk.Poly.create_box(
+        self.shape = pymunk.Circle(
             self.body, radius=self._sprite.texture.width / 2
         )
+        self.shape.elasticity = 0
+        self.shape.friction = 0.5
 
     def attack(self, npcs):
         if self.fainted() or self._sprite.current_animation_name == "attack":
@@ -48,13 +51,14 @@ class NPC:
     def draw(self):
         self._sprite.center_x = self.body.position.x
         self._sprite.center_y = self.body.position.y
-        self._sprite.angle = self.body.angle
+        self._sprite.angle = math.degrees(self.body.angle)
         self._sprite.draw()
 
     def fainted(self):
         return self.current_hp <= 0
 
-    def update(self):
+    def update(self, closest_celestial_body):
+        # animation related
         self._sprite.update()
         if not self._sprite.loop:
             self.non_looped_frames_remaining -= 1
@@ -73,6 +77,23 @@ class NPC:
             and self._sprite.current_animation_name == "walk"
         ):
             self._sprite.set_animation("idle")
+
+        # physics
+        polar_angle = math.atan2(
+            self.y - closest_celestial_body.y, self.x - closest_celestial_body.x
+        )
+        polar_x = math.cos(polar_angle)
+        polar_y = math.sin(polar_angle)
+
+        ## npc angle
+        target_angle = polar_angle - math.pi / 2
+        self.body.angle = target_angle  # TODO smoothed_angle
+        self.body.angular_velocity = 0
+        # print(f"smoothed_angle={smoothed_angle}")
+
+        ## gravity
+        force = (polar_x * -1000, polar_y * -1000)
+        self.body.apply_force_at_world_point(force, (0, 0))
 
     @property
     def x(self):

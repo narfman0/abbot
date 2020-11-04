@@ -71,13 +71,11 @@ class GameplayWindow(arcade.Window):
             return
         if not self.driver.player.fainted():
             if key == arcade.key.UP:
-                self.driver.moving_up = True
+                self.driver.jump()
             if key == arcade.key.LEFT:
                 self.driver.moving_left = True
             if key == arcade.key.RIGHT:
                 self.driver.moving_right = True
-            if key == arcade.key.DOWN:
-                self.driver.moving_down = True
             if key == arcade.key.A:
                 self.driver.do_attack = True
             if key == arcade.key.C:
@@ -91,5 +89,3 @@ class GameplayWindow(arcade.Window):
             self.driver.moving_left = False
         if key == arcade.key.RIGHT:
             self.driver.moving_right = False
-        if key == arcade.key.DOWN:
-            self.driver.moving_down = False

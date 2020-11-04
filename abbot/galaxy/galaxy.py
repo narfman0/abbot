@@ -35,7 +35,10 @@ class Galaxy:
         closest_distance = -1
         for chunk in self.position_to_active_chunks(x, y):
             for celestial_body in chunk.celestial_bodies:
-                celestial_body_distance = distance(celestial_body.x, celestial_body.y, x, y) - celestial_body.radius
+                celestial_body_distance = (
+                    distance(celestial_body.x, celestial_body.y, x, y)
+                    - celestial_body.radius
+                )
                 if closest is None or celestial_body_distance < closest_distance:
                     closest_distance = celestial_body_distance
                     closest = celestial_body

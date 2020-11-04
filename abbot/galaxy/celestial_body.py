@@ -13,6 +13,15 @@ class CelestialBody(arcade.Sprite):
         self.body = pymunk.Body(mass, moment, body_type=pymunk.body.Body.STATIC)
         self.body.position = center_x, center_y
         self.shape = pymunk.Circle(self.body, radius)
+        self.shape.friction = 0.5
+
+    @property
+    def x(self):
+        return self.center_x
+
+    @property
+    def y(self):
+        return self.center_y
 
     def __eq__(self, obj):
         return (

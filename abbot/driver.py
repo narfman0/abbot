@@ -13,6 +13,7 @@ MOVEMENT_SPEED = 2
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 25
 PLAYER_MOVE_FORCE_ON_GROUND = 1000
+PLAYER_JUMP_IMPULSE = 1000
 
 
 class Driver:
@@ -22,39 +23,38 @@ class Driver:
 
         self.moving_left = False
         self.moving_right = False
-        self.moving_up = False
-        self.moving_down = False
 
         self.do_attack = False
         self.galaxy = Galaxy()
 
         # Physics
         self.space = pymunk.Space()
-        self.space.add(self.player.body, self.player.poly)
+        self.space.add(self.player.body, self.player.shape)
         self.active_chunks = []
         self.active_chunks = self.update_active_chunks()
 
     def update(self, delta_time):
         """ Movement and game logic """
-        if self.moving_up:
-            force = (0, PLAYER_MOVE_FORCE_ON_GROUND)
-            self.player.body.apply_force_at_local_point(force, (0, 0))
-        if self.moving_down:
-            force = (0, -PLAYER_MOVE_FORCE_ON_GROUND)
-            self.player.body.apply_force_at_local_point(force, (0, 0))
         if self.moving_left:
             force = (-PLAYER_MOVE_FORCE_ON_GROUND, 0)
             self.player.body.apply_force_at_local_point(force, (0, 0))
         if self.moving_right:
             force = (PLAYER_MOVE_FORCE_ON_GROUND, 0)
             self.player.body.apply_force_at_local_point(force, (0, 0))
-        self.player.update()
+        closest_celestial_body = self.galaxy.closest_celestial_body(
+            self.player.x, self.player.y
+        )
+        self.player.update(closest_celestial_body)
 
         self.update_active_chunks()
         self.space.step(delta_time)
         if self.do_attack:
             self.do_attack = False
             self.player.attack([])
+
+    def jump(self):
+        impulse = (0, PLAYER_JUMP_IMPULSE)
+        self.player.body.apply_impulse_at_local_point(impulse)
 
     def update_active_chunks(self):
         last_active_chunks = self.active_chunks or []
