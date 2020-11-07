@@ -23,7 +23,7 @@ class Chunk:
         self.center_y = chunk_y * chunk_width
 
         self.seed_chunk()
-        self.celestial_bodies = arcade.SpriteList()
+        self.celestial_bodies = []
         self.create_celestial_body()
         # TODO generate more/varied celestial modies
         # TODO generate features on celestial bodies

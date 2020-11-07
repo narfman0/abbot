@@ -44,8 +44,8 @@ class GameplayWindow(arcade.Window):
         for chunk in self.driver.active_chunks:
             for celestial_body in chunk.celestial_bodies:
                 arcade.draw_circle_filled(
-                    celestial_body.center_x,
-                    celestial_body.center_y,
+                    celestial_body.x,
+                    celestial_body.y,
                     celestial_body.radius,
                     arcade.color.YELLOW,
                 )

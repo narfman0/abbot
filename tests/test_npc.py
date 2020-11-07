@@ -20,4 +20,4 @@ def test_npc_fainted():
 
 def test_npc_updated():
     npc = NPC("kingkrool")
-    npc.update()
+    npc.update(None)
