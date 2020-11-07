@@ -1,13 +1,17 @@
 import math
 import random
+import time
+from dataclasses import dataclass
 
 import arcade
 import pymunk
 
+from abbot import settings
 from abbot.ui.animated_sprite import AnimatedSprite
 from abbot.math import distance
 
 ATTACK_DISTANCE = 100
+PLAYER_JUMP_IMPULSE = 1000
 
 
 class NPC:
@@ -27,6 +31,10 @@ class NPC:
         self.shape = pymunk.Circle(self.body, radius=self._sprite.texture.width / 2)
         self.shape.elasticity = 0
         self.shape.friction = 0.5
+        self.shape.npc = self
+        self._collisions = []
+        self._time_last_collision = 0
+        self._time_last_jump = 0
 
     def attack(self, npcs):
         if self.fainted() or self._sprite.current_animation_name == "attack":
@@ -94,6 +102,33 @@ class NPC:
             force = (polar_x * -1000, polar_y * -1000)
             self.body.apply_force_at_world_point(force, (0, 0))
 
+    def jump(self):
+        if settings.USE_SIMPLE_JUMP_PHYSICS:
+            if self._collisions or time.time() - self._time_last_collision < .1:
+                self.body.apply_impulse_at_local_point((0, PLAYER_JUMP_IMPULSE))
+                self._time_last_jump = time.time()
+        else:
+            # more complex and right sounding, but has been less "correct"
+            for collision in self._collisions:
+                if (
+                    collision.shape.body is not None
+                    and abs(collision.normal.x / collision.normal.y) < self.shape.friction
+                ):
+                    self.body.apply_impulse_at_local_point((0, PLAYER_JUMP_IMPULSE))
+                    return
+
+    def add_collision(self, collision):
+        self._collisions.append(collision)
+        self.last_collision = time.time()
+
+    def remove_collision(self, shape):
+        to_remove = []
+        for collision in self._collisions:
+            if collision.shape == shape:
+                to_remove.append(collision)
+        for collision in to_remove:
+            self._collisions.remove(collision)
+
     @property
     def x(self):
         return self.body.position.x
@@ -105,3 +140,14 @@ class NPC:
     @property
     def angle(self):
         return self.body.angle
+
+
+@dataclass
+class Collision:
+    """Class for keeping track of an item in inventory."""
+
+    contact_point_set: []
+    normal: pymunk.Vec2d
+    shape: pymunk.Shape
+    surface_velocity: pymunk.Vec2d
+    total_impulse: float

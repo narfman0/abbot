@@ -15,11 +15,11 @@ class CelestialBody:
 
     @property
     def x(self):
-        return int(self.body.position[0])
+        return self.body.position.x
 
     @property
     def y(self):
-        return int(self.body.position[1])
+        return self.body.position.y
 
     def __eq__(self, obj):
         return self.x == obj.x and self.y == obj.y and self.radius == obj.radius

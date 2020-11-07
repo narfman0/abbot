@@ -5,7 +5,7 @@ import arcade
 import pymunk
 
 from abbot.math import distance
-from abbot.npc import NPC, ATTACK_DISTANCE
+from abbot.npc import Collision, NPC, ATTACK_DISTANCE
 from abbot.galaxy import Chunk, Galaxy
 
 # Movement speed of player, in pixels per frame
@@ -13,7 +13,6 @@ MOVEMENT_SPEED = 2
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 25
 PLAYER_MOVE_FORCE_ON_GROUND = 1000
-PLAYER_JUMP_IMPULSE = 1000
 
 
 class Driver:
@@ -28,10 +27,34 @@ class Driver:
         self.galaxy = Galaxy()
 
         # Physics
+        def handle_collision_begin(arbiter, space, data):
+            if hasattr(arbiter.shapes[0], "npc"):
+                self.handle_npc_collision_begin(
+                    arbiter, space, data, arbiter.shapes[0].npc, arbiter.shapes[1]
+                )
+            if hasattr(arbiter.shapes[1], "npc"):
+                self.handle_npc_collision_begin(
+                    arbiter, space, data, arbiter.shapes[1].npc, arbiter.shapes[0]
+                )
+            return True
+
+        def handle_collision_separate(arbiter, space, data):
+            if hasattr(arbiter.shapes[0], "npc"):
+                self.handle_npc_collision_separate(
+                    arbiter, space, data, arbiter.shapes[0].npc, arbiter.shapes[1]
+                )
+            if hasattr(arbiter.shapes[1], "npc"):
+                self.handle_npc_collision_separate(
+                    arbiter, space, data, arbiter.shapes[1].npc, arbiter.shapes[0]
+                )
+
         self.space = pymunk.Space()
         self.space.add(self.player.body, self.player.shape)
+        self.collision_handler = self.space.add_default_collision_handler()
+        self.collision_handler.begin = handle_collision_begin
+        self.collision_handler.separate = handle_collision_separate
         self.active_chunks = []
-        self.active_chunks = self.update_active_chunks()
+        self.update_active_chunks()
 
     def update(self, delta_time):
         """ Movement and game logic """
@@ -51,10 +74,6 @@ class Driver:
         if self.do_attack:
             self.do_attack = False
             self.player.attack([])
-
-    def jump(self):
-        impulse = (0, PLAYER_JUMP_IMPULSE)
-        self.player.body.apply_impulse_at_local_point(impulse)
 
     def update_active_chunks(self):
         last_active_chunks = self.active_chunks or []
@@ -85,3 +104,19 @@ class Driver:
                         )
 
                 print(f"Added chunk {active_chunk}")
+
+    def handle_npc_collision_begin(self, arbiter, space, data, npc, shape):
+        print(f"NPC collision with shape")
+        npc.add_collision(
+            Collision(
+                normal=arbiter.normal,
+                total_impulse=arbiter.total_impulse,
+                shape=shape,
+                contact_point_set=arbiter.contact_point_set,
+                surface_velocity=arbiter.surface_velocity,
+            )
+        )
+
+    def handle_npc_collision_separate(self, arbiter, space, data, npc, shape):
+        print(f"NPC separation with shape")
+        npc.remove_collision(shape)
