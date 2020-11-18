@@ -6,7 +6,7 @@ from abbot.math import distance
 
 
 class Galaxy:
-    """ Identify and control the environment. Chunks are viewed like a grid,
+    """Identify and control the environment. Chunks are viewed like a grid,
     and themselves have coordinates. Coordinates originate at 0,0 and can
     be positive or negative. A chunk can be
     thrown away when a player distances themselves sufficiently, and

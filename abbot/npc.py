@@ -12,6 +12,7 @@ from abbot.math import distance
 
 ATTACK_DISTANCE = 100
 PLAYER_JUMP_IMPULSE = 1000
+PLAYER_GRAVITY_IMPULSE = 20
 
 
 class NPC:
@@ -99,12 +100,11 @@ class NPC:
             # print(f"smoothed_angle={smoothed_angle}")
 
             ## gravity
-            force = (polar_x * -1000, polar_y * -1000)
-            self.body.apply_force_at_world_point(force, (0, 0))
+            self.body.apply_impulse_at_local_point((0, -PLAYER_GRAVITY_IMPULSE))
 
     def jump(self):
         if settings.USE_SIMPLE_JUMP_PHYSICS:
-            if self._collisions or time.time() - self._time_last_collision < .1:
+            if self._collisions or time.time() - self._time_last_collision < 0.1:
                 self.body.apply_impulse_at_local_point((0, PLAYER_JUMP_IMPULSE))
                 self._time_last_jump = time.time()
         else:
@@ -112,7 +112,8 @@ class NPC:
             for collision in self._collisions:
                 if (
                     collision.shape.body is not None
-                    and abs(collision.normal.x / collision.normal.y) < self.shape.friction
+                    and abs(collision.normal.x / collision.normal.y)
+                    < self.shape.friction
                 ):
                     self.body.apply_impulse_at_local_point((0, PLAYER_JUMP_IMPULSE))
                     return

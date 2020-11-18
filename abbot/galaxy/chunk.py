@@ -6,9 +6,9 @@ from abbot.galaxy.celestial_body import CelestialBody
 
 
 class Chunk:
-    """ A chunk within the game. A chunk has coordinates, defined as a
+    """A chunk within the game. A chunk has coordinates, defined as a
     chunk_x, chunk_y pair.
-    
+
     Note: coordinates shall always be absolute coordinates. Chunk
     coordinates do not exist and we will not do math relative to chunk
     coordinates.
@@ -38,7 +38,7 @@ class Chunk:
         return f"[Chunk {self.chunk_x},{self.chunk_y} seed={self.chunk_seed}]"
 
     def seed_chunk(self):
-        """ Initial pass at seed method. This should be consistent whenever
+        """Initial pass at seed method. This should be consistent whenever
         we see this chunk, since it will be reclaimed and die at any time.
         This must incorporate the global seed and the chunk coordinates, at
         a minimum.
